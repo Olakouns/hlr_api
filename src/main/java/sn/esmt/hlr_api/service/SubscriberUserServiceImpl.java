@@ -79,12 +79,22 @@ public class SubscriberUserServiceImpl implements SubscriberUserService {
 
             Optional<TLService> tlService = user.getTlServices().stream().filter(tls -> tls.getServiceType().name().equals(serviceRequest.getServiceType())).findFirst();
 
+            if (serviceRequest.isDeleted()) {
+                if (tlService.isPresent()) {
+                    user.getTlServices().removeIf(tlService1 -> tlService1.getId() == tlService.get().getId());
+                    subscriberUserRepository.save(user);
+                    return new ResponseEntity<>(serviceRequest.getServiceType() + "is deleted to " + number, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(serviceRequest.getServiceType() + "is not found to " + number, HttpStatus.NOT_FOUND);
+                }
+            }
+
+
             if (tlService.isPresent()) {
                 TLService tlServiceSave = tlService.get();
                 tlServiceSave.setActivated(serviceRequest.isActive());
                 tlServiceRepository.save(tlServiceSave);
             } else {
-                System.err.println(serviceRequest);
                 user.getTlServices().add(TLService.builder()
                         .activated(serviceRequest.isActive())
                         .serviceType(ServiceType.valueOf(serviceRequest.getServiceType().toUpperCase()))

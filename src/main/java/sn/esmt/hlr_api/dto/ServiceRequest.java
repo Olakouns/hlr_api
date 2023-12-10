@@ -14,4 +14,5 @@ public class ServiceRequest {
     private boolean active;
     private String serviceType;
     private String targetNumber;
+    private boolean deleted;
 }
